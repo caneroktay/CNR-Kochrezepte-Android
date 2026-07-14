@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Galeri seçimi (Android 13+) için ayrı bir izin GEREKMEZ (Photo Picker sistem
+         tarafından sağlanır). Kamera fiziksel donanım eriştiği için izin gerekir. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="KochRezepte"
+        android:theme="@style/Theme.KochRezepte"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.KochRezepte">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Kamera ile tam çözünürlük fotoğraf çekmek istersen (TakePicture contract)
+             bu provider'ı kullan; file_paths.xml içindeki images/ klasörüyle eşleşir. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.kochrezepte.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+    </application>
+</manifest>

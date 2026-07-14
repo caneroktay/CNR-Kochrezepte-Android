@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.KochRezepte" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Compose Theme tüm renkleri yönetiyor -->
+    </style>
+</resources>
