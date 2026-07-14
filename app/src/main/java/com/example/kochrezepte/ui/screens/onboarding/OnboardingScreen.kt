@@ -49,8 +49,6 @@ fun OnboardingScreen(onDiscoverClick: () -> Unit) {
         ) {
             Spacer(Modifier.weight(1f))
 
-            // TODO: Logo görselini res/drawable içine ekleyip burada
-            // Image(painter = painterResource(R.drawable.app_logo), ...) ile gösterin.
             Image(
                 painter = painterResource(R.drawable.app_logo),
                 contentDescription = null,

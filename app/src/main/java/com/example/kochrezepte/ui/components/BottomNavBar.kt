@@ -27,10 +27,6 @@ import com.example.kochrezepte.ui.theme.SurfaceDarkTranslucent
 import com.example.kochrezepte.ui.theme.TextOnOrange
 import com.example.kochrezepte.ui.theme.TextSecondary
 
-// NOT: Mockup'taki özel "aşçı şapkası + tencere" ikonu Material Icons'ta
-// bulunmuyor; şimdilik Icons.Default.Restaurant kullanıldı. Kendi vector
-// asset'inizi (örn. res/drawable/ic_chef_hat.xml) eklediğinizde burada
-// kolayca değiştirebilirsiniz.
 enum class BottomTab(val icon: ImageVector) {
     HOME(Icons.Default.Home),
     RECIPES(Icons.Default.Restaurant),

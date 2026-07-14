@@ -34,11 +34,6 @@ import java.io.File
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 
-/**
- * Kategori listesinde ve tarif listesinde kullanılan ortak satır bileşeni.
- * [imageFile] null ise varsayılan ikon gösterilir; gerçek resimleri
- * bağladığınızda otomatik olarak burada görünecektir.
- */
 @Composable
 fun RecipeListItem(
     title: String,

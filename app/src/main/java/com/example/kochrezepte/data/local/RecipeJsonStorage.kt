@@ -8,15 +8,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
-/**
- * Tüm tarif + kategori verisini tek bir JSON dosyası olarak
- * context.filesDir içine ("recipes_database.json") kaydeder/okur.
- *
- * NOT: Veri seti çok büyürse (binlerce tarif) her save() işleminde
- * tüm dosyanın yeniden yazılması performans sorunu yaratabilir.
- * Kişisel bir tarif defteri için (yüzlerce tarif) bu yeterlidir;
- * ölçek büyürse Room (SQLite) düşünülebilir.
- */
 class RecipeJsonStorage(private val context: Context) {
 
     private val json = Json {

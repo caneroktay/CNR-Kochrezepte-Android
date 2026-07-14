@@ -18,7 +18,6 @@ private val KochRezepteColorScheme = darkColorScheme(
     outline = BorderSubtle
 )
 
-// Uygulama sadece koyu temayı destekler (mockuplara göre tasarlandı)
 @Composable
 fun KochRezepteTheme(
     content: @Composable () -> Unit

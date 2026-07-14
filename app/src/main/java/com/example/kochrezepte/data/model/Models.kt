@@ -14,7 +14,6 @@ data class Ingredient(
 data class Category(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
-    // Kategori kapak resmi - context.filesDir/images içindeki dosya ADI (tam yol değil!)
     val imageFileName: String? = null
 )
 

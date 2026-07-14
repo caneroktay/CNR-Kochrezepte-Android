@@ -96,14 +96,9 @@ fun RecipeDetailScreen(
         ActivityResultContracts.PickVisualMedia()
     ) { uri -> if (uri != null) pickedImageUri = uri }
 
-    // NOT: TakePicturePreview küçük çözünürlüklü bir önizleme Bitmap'i döner,
-    // hızlı prototip için yeterlidir. Üretimde tam çözünürlük fotoğraf için
-    // FileProvider + ActivityResultContracts.TakePicture() kullanılması
-    // önerilir (README.md > "Kamera ile Tam Çözünürlük Fotoğraf" bölümüne bakın).
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicturePreview()
-    ) { _ -> /* TODO: Bitmap'i images/ klasörüne kaydedip pickedImageUri yerine
-                 doğrudan ImageStorageManager üzerinden dosya adı üretin. */ }
+    ) { _ -> /* TODO: ImageStorageManager  */ }
 
     fun handleSave() {
         val recipe = (existing ?: Recipe(title = title)).copy(

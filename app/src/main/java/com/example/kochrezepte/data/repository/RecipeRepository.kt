@@ -11,10 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/**
- * Tüm veri erişimi bu sınıf üzerinden yapılır. ViewModel'lar sadece
- * bu Repository'i kullanır, JSON/DataStore/dosya detaylarını bilmez.
- */
 class RecipeRepository(context: Context) {
 
     private val jsonStorage = RecipeJsonStorage(context)
@@ -33,7 +29,6 @@ class RecipeRepository(context: Context) {
         var updated = recipe
         if (newImageUri != null) {
             imageStorage.saveImage(newImageUri)?.let { fileName ->
-                // Eski resim varsa ve değiştiyse eskisini sil
                 recipe.imageFileName?.let { old -> if (old != fileName) imageStorage.deleteImage(old) }
                 updated = recipe.copy(imageFileName = fileName)
             }

@@ -35,11 +35,6 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 
-/**
- * Salt-okunur tarif görüntüleme ekranı. Tarif listesinden tıklanınca
- * önce burası açılır; düzenleme formuna (RecipeDetailScreen) sadece
- * "Bearbeiten" butonuyla gidilir.
- */
 @Composable
 fun RecipeViewScreen(
     navController: NavHostController,
