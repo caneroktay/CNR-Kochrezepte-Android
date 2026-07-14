@@ -85,7 +85,7 @@ fun HomeScreen(
                 ) { Icon(Icons.Default.Person, contentDescription = null, tint = TextSecondary) }
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    text = if (userName.isBlank()) "KochRezepte" else "$userName" + "s Rezepte",
+                    text = if (userName.isBlank()) "KochRezepte" else " $userName" + "s Rezepte",
                     style = MaterialTheme.typography.headlineLarge,
                     color = TextPrimary
                 )
