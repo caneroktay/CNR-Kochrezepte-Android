@@ -1,6 +1,6 @@
 
 # KochRezepte – Dein digitales Kochbuch
-![KochRezepte_Logo](assets/kochrezepte_logo.png)
+![KochRezepte_Logo](assets/app_logo.png)
 
 **KochRezepte** ist eine native Android-Anwendung zum Erfassen, Organisieren und
 Nachschlagen eigener Kochrezepte. Rezepte werden mit Titel, Beschreibung,
@@ -17,7 +17,7 @@ Zutatenliste, Zubereitungsschritten, Kategorien, Fotos und externen Links
 
 ![1](assets/1.png)   ![2](assets/2.png)   ![3](assets/3.png)
 
-![4](assets/4.png)   ![5](assets/5.png)   ![6](assets/6.png)
+![4](assets/4.png)
 
 ---
 
