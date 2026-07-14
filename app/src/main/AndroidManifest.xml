@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Galeri seçimi (Android 13+) için ayrı bir izin GEREKMEZ (Photo Picker sistem
-         tarafından sağlanır). Kamera fiziksel donanım eriştiği için izin gerekir. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
@@ -23,8 +21,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Kamera ile tam çözünürlük fotoğraf çekmek istersen (TakePicture contract)
-             bu provider'ı kullan; file_paths.xml içindeki images/ klasörüyle eşleşir. -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.kochrezepte.fileprovider"

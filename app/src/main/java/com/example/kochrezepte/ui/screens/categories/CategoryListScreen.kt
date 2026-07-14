@@ -87,7 +87,7 @@ fun CategoryListScreen(navController: NavHostController, recipeViewModel: Recipe
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        modifier = Modifier.size(48.dp).clip(CircleShape).background(SurfaceDarkElevated),
+                        modifier = Modifier.size(55.dp).clip(CircleShape).background(SurfaceDarkElevated),
                         contentAlignment = Alignment.Center
                     ) { Icon(Icons.Default.Person, contentDescription = null, tint = TextSecondary) }
                     Spacer(Modifier.width(12.dp))

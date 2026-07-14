@@ -91,7 +91,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Box {
+                /*Box {
                     OutlinedButton(onClick = { showLanguageMenu = true }, modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -109,7 +109,7 @@ fun SettingsScreen(
                             })
                         }
                     }
-                }
+                }*/
 
                 OutlinedButton(
                     onClick = { /* TODO: JSON dosyasını Intent.ACTION_SEND ile paylaşarak dışa aktarın */ },
