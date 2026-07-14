@@ -5,6 +5,7 @@ import android.net.Uri
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
+import androidx.core.content.FileProvider
 
 class ImageStorageManager(private val context: Context) {
 
@@ -25,7 +26,15 @@ class ImageStorageManager(private val context: Context) {
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        } finally {
+            File(context.cacheDir, "camera_temp").listFiles()?.forEach { it.delete() }
         }
+    }
+
+    fun createCameraCaptureUri(): Uri {
+        val tempDir = File(context.cacheDir, "camera_temp").apply { if (!exists()) mkdirs() }
+        val tempFile = File(tempDir, "${UUID.randomUUID()}.jpg")
+        return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", tempFile)
     }
 
     fun getImageFile(fileName: String?): File? {

@@ -46,4 +46,13 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
     fun clearAllData() {
         viewModelScope.launch { repository.clearAllData() }
     }
+    fun createCameraCaptureUri(): Uri = repository.createCameraCaptureUri()
+
+    fun exportData(destinationUri: Uri, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch { onResult(repository.exportBackup(destinationUri)) }
+    }
+
+    fun importData(sourceUri: Uri, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch { onResult(repository.importBackup(sourceUri)) }
+    }
 }

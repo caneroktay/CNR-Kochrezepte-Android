@@ -46,6 +46,13 @@ import com.example.kochrezepte.ui.theme.SurfaceDark
 import com.example.kochrezepte.ui.theme.TextPrimary
 import com.example.kochrezepte.viewmodel.RecipeViewModel
 import com.example.kochrezepte.viewmodel.SettingsViewModel
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Upload
+import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
 fun SettingsScreen(
@@ -57,6 +64,22 @@ fun SettingsScreen(
     var nameField by remember(userName) { mutableStateOf(userName) }
     var showLanguageMenu by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var importUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri ->
+        if (uri != null) {
+            recipeViewModel.exportData(uri) { success ->
+                Toast.makeText(context, if (success) "Backup erfolgreich exportiert" else "Export fehlgeschlagen", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) importUri = uri }
     val language by settingsViewModel.language.collectAsState()
 
     Scaffold(
@@ -112,7 +135,7 @@ fun SettingsScreen(
                 }*/
 
                 OutlinedButton(
-                    onClick = { /* TODO: JSON dosyasını Intent.ACTION_SEND ile paylaşarak dışa aktarın */ },
+                    onClick = { exportLauncher.launch("kochrezepte_backup_${System.currentTimeMillis()}.zip") },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -122,6 +145,20 @@ fun SettingsScreen(
                     ) {
                         Text("Daten Exportieren")
                         Icon(Icons.Default.Download, contentDescription = null)
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = { importLauncher.launch(arrayOf("application/zip")) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Daten Importieren")
+                        Icon(Icons.Default.Upload, contentDescription = null)
                     }
                 }
 
@@ -155,6 +192,27 @@ fun SettingsScreen(
                 }) { Text("Löschen", color = DangerRed) }
             },
             dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("Abbrechen") } }
+        )
+    }
+
+    importUri?.let { uri ->
+        AlertDialog(
+            onDismissRequest = { importUri = null },
+            title = { Text("Daten importieren?") },
+            text = { Text("Bestehende Rezepte und Kategorien werden mit den Daten aus der Backup-Datei überschrieben.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    recipeViewModel.importData(uri) { success ->
+                        Toast.makeText(
+                            context,
+                            if (success) "Backup erfolgreich importiert" else "Import fehlgeschlagen",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    importUri = null
+                }) { Text("Importieren", color = DangerRed) }
+            },
+            dismissButton = { TextButton(onClick = { importUri = null }) { Text("Abbrechen") } }
         )
     }
 }

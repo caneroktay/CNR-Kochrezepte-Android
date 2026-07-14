@@ -10,12 +10,13 @@ import com.example.kochrezepte.data.model.RecipeDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.example.kochrezepte.data.local.BackupManager
 
 class RecipeRepository(context: Context) {
 
     private val jsonStorage = RecipeJsonStorage(context)
     private val imageStorage = ImageStorageManager(context)
-
+    private val backupManager = BackupManager(context)
     private val _state = MutableStateFlow(RecipeDatabase())
     val state: StateFlow<RecipeDatabase> = _state.asStateFlow()
 
@@ -24,6 +25,16 @@ class RecipeRepository(context: Context) {
     }
 
     fun resolveImageFile(fileName: String?) = imageStorage.getImageFile(fileName)
+
+    fun createCameraCaptureUri(): Uri = imageStorage.createCameraCaptureUri()
+
+    suspend fun exportBackup(destinationUri: Uri): Boolean = backupManager.exportBackup(destinationUri)
+
+    suspend fun importBackup(sourceUri: Uri): Boolean {
+        val success = backupManager.importBackup(sourceUri)
+        if (success) _state.value = jsonStorage.load()
+        return success
+    }
 
     suspend fun addOrUpdateRecipe(recipe: Recipe, newImageUri: Uri?) {
         var updated = recipe
