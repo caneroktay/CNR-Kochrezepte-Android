@@ -48,6 +48,8 @@ import com.example.kochrezepte.ui.theme.TextPrimary
 import com.example.kochrezepte.ui.theme.TextSecondary
 import com.example.kochrezepte.viewmodel.RecipeViewModel
 import com.example.kochrezepte.viewmodel.SettingsViewModel
+import androidx.compose.ui.text.style.TextAlign
+
 
 @Composable
 fun HomeScreen(
@@ -59,7 +61,7 @@ fun HomeScreen(
     val userName by settingsViewModel.userName.collectAsState()
 
     Scaffold(
-        containerColor = BackgroundBlack,
+        containerColor = BackgroundBlack ,
         bottomBar = {
             BottomNavBar(selected = BottomTab.HOME, onTabSelected = { tab ->
                 when (tab) {
@@ -96,10 +98,10 @@ fun HomeScreen(
             Spacer(Modifier.height(12.dp))
 
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(3),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.height(300.dp)
+                modifier = Modifier.height(200.dp)
             ) {
                 items(db.categories) { category ->
                     val imageFile = recipeViewModel.resolveImageFile(category.imageFileName)
@@ -122,7 +124,16 @@ fun HomeScreen(
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
-                        Text(category.name, color = TextPrimary, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = category.name,
+                            color = TextPrimary,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(horizontal = 6.dp),
+                            maxLines = 3,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
@@ -136,9 +147,11 @@ fun HomeScreen(
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 items(db.recipes.filter { it.isFavorite }) { recipe ->
+                    val categoryName = recipe.categoryIds.firstOrNull()
+                        ?.let { id -> db.categories.find { it.id == id }?.name } ?: "Rezept"
                     RecipeListItem(
                         title = recipe.title,
-                        subtitle = "Favorit",
+                        subtitle = categoryName,
                         imageFile = recipeViewModel.resolveImageFile(recipe.imageFileName),
                         isFavorite = recipe.isFavorite,
                         onToggleFavorite = { recipeViewModel.toggleFavorite(recipe.id) },

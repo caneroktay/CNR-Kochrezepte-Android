@@ -11,7 +11,7 @@ val HermesOrangeDark = Color(0xFFB35C0A)
 val BackgroundBlack = Color(0xFF0A0A0A)
 val SurfaceDark = Color(0xFF1C1C1E)
 val SurfaceDarkElevated = Color(0xFF2A2A2C)
-val SurfaceDarkTranslucent = Color(0xCC1C1C1E)
+val SurfaceDarkTranslucent = Color(0xFF191A1C)
 
 
 val TextPrimary = Color(0xFFD2D2D2)

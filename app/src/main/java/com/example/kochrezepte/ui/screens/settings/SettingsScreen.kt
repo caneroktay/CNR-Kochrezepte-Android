@@ -2,7 +2,6 @@ package com.example.kochrezepte.ui.screens.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,15 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -52,6 +50,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.LocalUriHandler
+import com.example.kochrezepte.ui.theme.HermesOrange
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.example.kochrezepte.R
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+
 
 
 @Composable
@@ -62,11 +73,10 @@ fun SettingsScreen(
 ) {
     val userName by settingsViewModel.userName.collectAsState()
     var nameField by remember(userName) { mutableStateOf(userName) }
-    var showLanguageMenu by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var importUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
-
+    val uriHandler = LocalUriHandler.current
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/zip")
     ) { uri ->
@@ -80,7 +90,6 @@ fun SettingsScreen(
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri -> if (uri != null) importUri = uri }
-    val language by settingsViewModel.language.collectAsState()
 
     Scaffold(
         containerColor = BackgroundBlack,
@@ -113,26 +122,6 @@ fun SettingsScreen(
                     label = { Text("Benutzername") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                /*Box {
-                    OutlinedButton(onClick = { showLanguageMenu = true }, modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(languageLabel(language))
-                            Icon(Icons.Default.ExpandMore, contentDescription = null)
-                        }
-                    }
-                    DropdownMenu(expanded = showLanguageMenu, onDismissRequest = { showLanguageMenu = false }) {
-                        listOf("de" to "Deutsch", "tr" to "Türkçe", "en" to "English").forEach { (code, label) ->
-                            DropdownMenuItem(text = { Text(label) }, onClick = {
-                                settingsViewModel.setLanguage(code); showLanguageMenu = false
-                            })
-                        }
-                    }
-                }*/
 
                 OutlinedButton(
                     onClick = { exportLauncher.launch("kochrezepte_backup_${System.currentTimeMillis()}.zip") },
@@ -177,6 +166,98 @@ fun SettingsScreen(
                     }
                 }
             }
+            Spacer(Modifier.height(25.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth().background(SurfaceDark, RoundedCornerShape(28.dp)).padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Datenhinweis",
+                        color = TextPrimary,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Text(
+                        text = "Um Ihre Rezepte zu sichern, tippen Sie einfach auf „Daten Exportieren“ und speichern Sie die ZIP‑Datei auf Ihrem Smartphone.\n\n" +
+                                "Wenn Sie das Gerät wechseln oder Ihre Rezepte auf ein anderes Handy übertragen möchten, schicken Sie diese ZIP‑Datei an das neue Gerät.\n\n" +
+                                "Öffnen Sie dort die KochRezepte‑App, wählen Sie „Daten Importieren“ und anschließend die ZIP‑Datei aus.\n\n" +
+                                "Damit werden alle Rezepte vollständig übernommen.",
+                        color = TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+            }
+            Spacer(Modifier.height(25.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.app_logo),
+                        contentDescription = "App Logo",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                    )
+                    Spacer(Modifier.height(5.dp))
+                    val uriHandler = LocalUriHandler.current
+                    ClickableText(
+                        text = AnnotatedString("Mehr Informationen.."),
+                        style = MaterialTheme.typography.bodySmall.copy(color = HermesOrange),
+                        onClick = {
+                            uriHandler.openUri("https://github.com/caneroktay/CNR-Kochrezepte-Android")
+                        }
+                    )
+                }
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = buildAnnotatedString {
+                            append("Entwickelt von\n")
+
+                            withStyle(
+                                style = SpanStyle(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 20.sp
+                                )
+                            ) {
+                                append("Caner Oktay")
+                            }
+                        },
+                        color = TextPrimary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+
+                    ClickableText(
+                        text = AnnotatedString("caneroktay.com"),
+                        style = MaterialTheme.typography.bodySmall.copy(color = HermesOrange),
+                        onClick = {
+                            uriHandler.openUri("https://caneroktay.com")
+                        }
+                    )
+                }
+            }
+
+
+
         }
     }
 
@@ -217,8 +298,3 @@ fun SettingsScreen(
     }
 }
 
-private fun languageLabel(code: String) = when (code) {
-    "tr" -> "Türkçe"
-    "en" -> "English"
-    else -> "Deutsch"
-}

@@ -43,7 +43,7 @@ fun BottomNavBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 45.dp, top = 5.dp, 45.dp, 32.dp)
+            .padding(start = 45.dp, top = 5.dp, 45.dp, 52.dp)
             .background(SurfaceDarkTranslucent, RoundedCornerShape(50)),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
@@ -52,8 +52,8 @@ fun BottomNavBar(
             val isSelected = tab == selected
             Box(
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .size(72.dp)
+                    .padding(vertical = 5.dp)
+                    .size(52.dp)
                     .background(if (isSelected) HermesOrange else Color.Transparent, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
