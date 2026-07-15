@@ -19,6 +19,8 @@ Zutatenliste, Zubereitungsschritten, Kategorien, Fotos und externen Links
 
 ![3](assets/3.png)   ![4](assets/4.png)
 
+![5](assets/5.png)   ![6](assets/6.png)
+
 ---
 
 ## ✨ Funktionen
