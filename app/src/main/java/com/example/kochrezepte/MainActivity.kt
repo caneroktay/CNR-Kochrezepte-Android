@@ -14,15 +14,29 @@ import com.example.kochrezepte.ui.theme.BackgroundBlack
 import com.example.kochrezepte.ui.theme.KochRezepteTheme
 import com.example.kochrezepte.viewmodel.RecipeViewModel
 import com.example.kochrezepte.viewmodel.SettingsViewModel
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
-            KochRezepteApp()
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    density = 3f,
+                    fontScale = 1f
+                )
+            ) {
+                KochRezepteApp()
+            }
         }
     }
 }
+
 
 @Composable
 fun KochRezepteApp() {
