@@ -50,8 +50,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.platform.LocalUriHandler
 import com.example.kochrezepte.ui.theme.HermesOrange
 import androidx.compose.foundation.Image
@@ -62,6 +60,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable
+
 
 
 
@@ -215,10 +215,11 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.height(5.dp))
                     val uriHandler = LocalUriHandler.current
-                    ClickableText(
-                        text = AnnotatedString("Mehr Informationen.."),
-                        style = MaterialTheme.typography.bodySmall.copy(color = HermesOrange),
-                        onClick = {
+                    Text(
+                        text = "Mehr Informationen..",
+                        color = HermesOrange,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.clickable {
                             uriHandler.openUri("https://github.com/caneroktay/CNR-Kochrezepte-Android")
                         }
                     )
@@ -246,10 +247,11 @@ fun SettingsScreen(
                         textAlign = TextAlign.Center
                     )
 
-                    ClickableText(
-                        text = AnnotatedString("caneroktay.com"),
-                        style = MaterialTheme.typography.bodySmall.copy(color = HermesOrange),
-                        onClick = {
+                    Text(
+                        text = "caneroktay.com",
+                        color = HermesOrange,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.clickable {
                             uriHandler.openUri("https://caneroktay.com")
                         }
                     )
