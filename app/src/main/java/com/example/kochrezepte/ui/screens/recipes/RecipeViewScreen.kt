@@ -4,12 +4,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,19 +29,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.kochrezepte.navigation.AppDestinations
 import com.example.kochrezepte.ui.theme.*
 import com.example.kochrezepte.viewmodel.RecipeViewModel
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun RecipeViewScreen(
@@ -44,13 +51,17 @@ fun RecipeViewScreen(
     val db by recipeViewModel.state.collectAsState()
     val recipe = remember(db, recipeId) { db.recipes.find { it.id == recipeId } }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var fullscreenIndex by remember { mutableStateOf<Int?>(null) }
 
     if (recipe == null) {
         navController.popBackStack()
         return
     }
 
-    val imageFile = recipeViewModel.resolveImageFile(recipe.imageFileName)
+    val imageFiles = remember(recipe) {
+        val fileNames = recipe.imageFileNames.ifEmpty { listOfNotNull(recipe.imageFileName) }
+        fileNames.mapNotNull { recipeViewModel.resolveImageFile(it) }
+    }
     val categoryNames = recipe.categoryIds.mapNotNull { id -> db.categories.find { it.id == id }?.name }
 
     Scaffold(
@@ -64,8 +75,8 @@ fun RecipeViewScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.Default.ChevronLeft, contentDescription = null, tint = HermesOrange)
-                    Text("Zurück", color = HermesOrange)
+                    Icon(Icons.Default.ChevronLeft, contentDescription = null, tint = TextPrimary)
+                    Text("Zurück", color = TextPrimary)
                 }
             }
         }
@@ -78,20 +89,32 @@ fun RecipeViewScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(220.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(SurfaceDark)
-                ) {
-                    if (imageFile != null) {
-                        AsyncImage(
-                            model = imageFile,
-                            contentDescription = recipe.title,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                if (imageFiles.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(SurfaceDark)
+                    )
+                } else {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        itemsIndexed(imageFiles) { index, file ->
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 260.dp, height = 220.dp)
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(SurfaceDark)
+                                    .clickable { fullscreenIndex = index }
+                            ) {
+                                AsyncImage(
+                                    model = file,
+                                    contentDescription = recipe.title,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -152,7 +175,7 @@ fun RecipeViewScreen(
 
             if (recipe.ingredients.isNotEmpty()) {
                 item {
-                    Text("Zutaten", color = HermesOrange, style = MaterialTheme.typography.titleLarge)
+                    Text("Zutaten", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
                 }
                 items(recipe.ingredients) { ingredient ->
                     Row(
@@ -169,7 +192,7 @@ fun RecipeViewScreen(
 
             if (recipe.preparation.isNotBlank()) {
                 item {
-                    Text("Zubereitung", color = HermesOrange, style = MaterialTheme.typography.titleLarge)
+                    Text("Zubereitung", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(8.dp))
                     Text(recipe.preparation, color = TextPrimary, style = MaterialTheme.typography.bodyLarge)
                 }
@@ -177,7 +200,7 @@ fun RecipeViewScreen(
 
             if (recipe.note.isNotBlank()) {
                 item {
-                    Text("Notiz", color = HermesOrange, style = MaterialTheme.typography.titleLarge)
+                    Text("Notiz", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(8.dp))
                     Text(recipe.note, color = TextSecondary, style = MaterialTheme.typography.bodyLarge)
                 }
@@ -185,7 +208,7 @@ fun RecipeViewScreen(
 
             if (recipe.links.isNotEmpty()) {
                 item {
-                    Text("Links", color = HermesOrange, style = MaterialTheme.typography.titleLarge)
+                    Text("Links", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
                 }
                 items(recipe.links) { link ->
                     val uriHandler = LocalUriHandler.current
@@ -254,5 +277,46 @@ fun RecipeViewScreen(
             },
             dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("Abbrechen") } }
         )
+    }
+
+    fullscreenIndex?.let { startIndex ->
+        Dialog(
+            onDismissRequest = { fullscreenIndex = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            val pagerState = rememberPagerState(initialPage = startIndex) { imageFiles.size }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                    AsyncImage(
+                        model = imageFiles[page],
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                IconButton(
+                    onClick = { fullscreenIndex = null },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .statusBarsPadding()
+                        .padding(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = "Schließen", tint = Color.White)
+                }
+                if (imageFiles.size > 1) {
+                    Text(
+                        "${pagerState.currentPage + 1} / ${imageFiles.size}",
+                        color = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    )
+                }
+            }
+        }
     }
 }

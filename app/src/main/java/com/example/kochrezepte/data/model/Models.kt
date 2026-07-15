@@ -29,6 +29,7 @@ data class Recipe(
     val note: String = "",
     val links: List<String> = emptyList(),
     val imageFileName: String? = null,
+    val imageFileNames: List<String> = emptyList(),
     val isFavorite: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )

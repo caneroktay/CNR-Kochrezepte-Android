@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kochrezepte.data.local.BackupManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class RecipeRepository(context: Context) {
 
@@ -36,20 +38,22 @@ class RecipeRepository(context: Context) {
         return success
     }
 
-    suspend fun addOrUpdateRecipe(recipe: Recipe, newImageUri: Uri?) {
-        var updated = recipe
-        if (newImageUri != null) {
-            imageStorage.saveImage(newImageUri)?.let { fileName ->
-                recipe.imageFileName?.let { old -> if (old != fileName) imageStorage.deleteImage(old) }
-                updated = recipe.copy(imageFileName = fileName)
-            }
-        }
+    suspend fun copyImage(uri: Uri): String? = withContext(Dispatchers.IO) {
+        imageStorage.saveImage(uri)
+    }
+
+    suspend fun addOrUpdateRecipe(recipe: Recipe) {
         val current = _state.value
-        val exists = current.recipes.any { it.id == updated.id }
+        val previous = current.recipes.find { it.id == recipe.id }
+        previous?.imageFileNames?.forEach { old ->
+            if (old !in recipe.imageFileNames) imageStorage.deleteImage(old)
+        }
+
+        val exists = current.recipes.any { it.id == recipe.id }
         val newList = if (exists) {
-            current.recipes.map { if (it.id == updated.id) updated else it }
+            current.recipes.map { if (it.id == recipe.id) recipe else it }
         } else {
-            current.recipes + updated
+            current.recipes + recipe
         }
         _state.value = current.copy(recipes = newList)
         jsonStorage.save(_state.value)
@@ -58,7 +62,8 @@ class RecipeRepository(context: Context) {
     suspend fun deleteRecipe(recipeId: String) {
         val current = _state.value
         val recipe = current.recipes.find { it.id == recipeId }
-        recipe?.imageFileName?.let { imageStorage.deleteImage(it) }
+        val filesToDelete = recipe?.imageFileNames?.ifEmpty { listOfNotNull(recipe.imageFileName) } ?: emptyList()
+        filesToDelete.forEach { imageStorage.deleteImage(it) }
         _state.value = current.copy(recipes = current.recipes.filterNot { it.id == recipeId })
         jsonStorage.save(_state.value)
     }

@@ -20,9 +20,11 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
 
     fun resolveImageFile(fileName: String?) = repository.resolveImageFile(fileName)
 
-    fun saveRecipe(recipe: Recipe, newImageUri: Uri? = null) {
-        viewModelScope.launch { repository.addOrUpdateRecipe(recipe, newImageUri) }
+    fun saveRecipe(recipe: Recipe) {
+        viewModelScope.launch { repository.addOrUpdateRecipe(recipe) }
     }
+
+    suspend fun copyImageForRecipe(uri: Uri): String? = repository.copyImage(uri)
 
     fun deleteRecipe(recipeId: String) {
         viewModelScope.launch { repository.deleteRecipe(recipeId) }
@@ -31,7 +33,7 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
     fun toggleFavorite(recipeId: String) {
         val current = state.value.recipes.find { it.id == recipeId } ?: return
         viewModelScope.launch {
-            repository.addOrUpdateRecipe(current.copy(isFavorite = !current.isFavorite), null)
+            repository.addOrUpdateRecipe(current.copy(isFavorite = !current.isFavorite))
         }
     }
 

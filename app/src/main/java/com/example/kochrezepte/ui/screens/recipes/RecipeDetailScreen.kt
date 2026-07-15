@@ -1,13 +1,15 @@
 package com.example.kochrezepte.ui.screens.recipes
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,15 +18,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +36,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -43,19 +47,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.example.kochrezepte.data.model.Ingredient
 import com.example.kochrezepte.data.model.Recipe
-import com.example.kochrezepte.ui.components.BottomNavBar
-import com.example.kochrezepte.ui.components.BottomTab
 import com.example.kochrezepte.ui.theme.BackgroundBlack
 import com.example.kochrezepte.ui.theme.DangerRed
 import com.example.kochrezepte.ui.theme.HermesOrange
@@ -65,8 +70,17 @@ import com.example.kochrezepte.ui.theme.SurfaceDarkElevated
 import com.example.kochrezepte.ui.theme.TextPrimary
 import com.example.kochrezepte.ui.theme.TextSecondary
 import com.example.kochrezepte.viewmodel.RecipeViewModel
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.MaterialTheme
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.ui.text.style.TextAlign
+import com.example.kochrezepte.ui.theme.TextOnOrange
+
+private sealed class ImageItem {
+    data class Existing(val fileName: String) : ImageItem()
+    data class New(val uri: Uri) : ImageItem()
+}
 
 @Composable
 fun RecipeDetailScreen(
@@ -86,38 +100,88 @@ fun RecipeDetailScreen(
     var links by remember { mutableStateOf(existing?.links ?: emptyList()) }
     var selectedCategoryIds by remember { mutableStateOf(existing?.categoryIds ?: emptyList()) }
     var ingredients by remember { mutableStateOf(existing?.ingredients ?: emptyList()) }
-    var pickedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showCategoryMenu by remember { mutableStateOf(false) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
+    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
 
-    val existingImageFile = recipeViewModel.resolveImageFile(existing?.imageFileName)
+    var images by remember {
+        val initial = existing?.imageFileNames?.ifEmpty { listOfNotNull(existing.imageFileName) } ?: emptyList()
+        mutableStateOf<List<ImageItem>>(initial.map { ImageItem.Existing(it) })
+    }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickVisualMedia()
-    ) { uri -> if (uri != null) pickedImageUri = uri }
+        ActivityResultContracts.PickMultipleVisualMedia()
+    ) { uris -> if (uris.isNotEmpty()) images = images + uris.map { ImageItem.New(it) } }
 
     val cameraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicturePreview()
-    ) { _ -> /* TODO: ImageStorageManager  */ }
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) pendingCameraUri?.let { images = images + ImageItem.New(it) }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val uri = recipeViewModel.createCameraCaptureUri()
+            pendingCameraUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context, "Kamera-Berechtigung erforderlich", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun launchCamera() {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (hasPermission) {
+            val uri = recipeViewModel.createCameraCaptureUri()
+            pendingCameraUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     fun handleSave() {
-        val recipe = (existing ?: Recipe(title = title)).copy(
-            title = title,
-            categoryIds = selectedCategoryIds,
-            description = description,
-            timeMinutes = timeMinutes,
-            ingredients = ingredients,
-            preparation = preparation,
-            note = note,
-            links = links.filter { it.isNotBlank() }
-        )
-        recipeViewModel.saveRecipe(recipe, pickedImageUri)
-        navController.popBackStack()
+        if (isSaving) return
+        isSaving = true
+        scope.launch {
+            // Sırayla: zaten kayıtlı dosya adlarını olduğu gibi bırak,
+            // yeni Uri'leri kalıcı depoya kopyalayıp dosya adını al.
+            val finalFileNames = images.mapNotNull { item ->
+                when (item) {
+                    is ImageItem.Existing -> item.fileName
+                    is ImageItem.New -> recipeViewModel.copyImageForRecipe(item.uri)
+                }
+            }
+
+            val recipe = (existing ?: Recipe(title = title)).copy(
+                title = title,
+                categoryIds = selectedCategoryIds,
+                description = description,
+                timeMinutes = timeMinutes,
+                ingredients = ingredients,
+                preparation = preparation,
+                note = note,
+                links = links.filter { it.isNotBlank() },
+                imageFileNames = finalFileNames,
+                imageFileName = finalFileNames.firstOrNull()
+            )
+            recipeViewModel.saveRecipe(recipe)
+            isSaving = false
+            navController.popBackStack()
+        }
     }
 
     Scaffold(
         containerColor = BackgroundBlack,
-        // bottomBar = { BottomNavBar(selected = BottomTab.RECIPES, onTabSelected = {}) },
+
         topBar = {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(5.dp, 60.dp, 15.dp, 15.dp),
@@ -132,7 +196,7 @@ fun RecipeDetailScreen(
                     if (!isNew) {
                         Button(
                             onClick = {
-                                existing?.let { recipeViewModel.deleteRecipe(it.id) }
+                                existing.let { recipeViewModel.deleteRecipe(it.id) }
                                 navController.popBackStack()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = SurfaceDarkElevated)
@@ -140,8 +204,9 @@ fun RecipeDetailScreen(
                     }
                     Button(
                         onClick = { handleSave() },
+                        enabled = !isSaving,
                         colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
-                    ) { Text("Speichern", color = Color.Black) }
+                    ) { Text(if (isSaving) "Speichert..." else "Speichern", color = Color.Black) }
                 }
             }
         }
@@ -153,26 +218,53 @@ fun RecipeDetailScreen(
             item { Text(if (isNew) "Neu Rezept..." else "Rezept bearbeiten", color = TextSecondary) }
 
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(SurfaceDark),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val displayUri = pickedImageUri
-                    when {
-                        displayUri != null -> AsyncImage(
-                            model = displayUri, contentDescription = null,
-                            contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
-                        )
-                        existingImageFile != null -> AsyncImage(
-                            model = existingImageFile, contentDescription = null,
-                            contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
-                        )
-                        else -> IconButton(onClick = { showImageSourceDialog = true }) {
-                            Icon(Icons.Default.AddAPhoto, contentDescription = "Foto hinzufügen", tint = HermesOrange)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    itemsIndexed(images) { index, item ->
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(SurfaceDark)
+                        ) {
+                            val model = when (item) {
+                                is ImageItem.Existing -> recipeViewModel.resolveImageFile(item.fileName)
+                                is ImageItem.New -> item.uri
+                            }
+                            AsyncImage(
+                                model = model,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.6f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                IconButton(
+                                    onClick = { images = images.toMutableList().also { it.removeAt(index) } },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(Icons.Default.Close, contentDescription = "Entfernen", tint = Color.White)
+                                }
+                            }
+                        }
+                    }
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(SurfaceDark),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            IconButton(onClick = { showImageSourceDialog = true }) {
+                                Icon(Icons.Default.AddAPhoto, contentDescription = "Foto hinzufügen", tint = HermesOrange)
+                            }
                         }
                     }
                 }
@@ -223,16 +315,34 @@ fun RecipeDetailScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Zeit (Minuten)", color = TextPrimary)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("$timeMinutes", color = TextPrimary)
-                        Column {
-                            IconButton(onClick = { timeMinutes++ }, modifier = Modifier.size(44.dp)) {
-                                Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = TextSecondary)
-                            }
-                            IconButton(onClick = { if (timeMinutes > 0) timeMinutes-- }, modifier = Modifier.size(44.dp)) {
-                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = TextSecondary)
-                            }
+                    Text("Zeit (Min.)", color = TextPrimary, style = MaterialTheme.typography.bodyLarge)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(SurfaceDarkElevated)
+                                .clickable { timeMinutes = (timeMinutes - 5).coerceAtLeast(0) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = "5 Minuten weniger", tint = HermesOrange)
+                        }
+                        Text(
+                            "$timeMinutes",
+                            color = TextPrimary,
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.widthIn(min = 40.dp)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(HermesOrange)
+                                .clickable { timeMinutes += 5 },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "5 Minuten mehr", tint = TextOnOrange)
                         }
                     }
                 }
@@ -244,9 +354,9 @@ fun RecipeDetailScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Zutaten", color = TextPrimary, style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
+                    Text("Zutaten", color = TextPrimary, style = MaterialTheme.typography.titleMedium)
                     IconButton(onClick = { ingredients = ingredients + Ingredient(name = "") }) {
-                        Icon(Icons.Default.Add, contentDescription = null, tint = HermesOrange)
+                        Icon(Icons.Default.Add, contentDescription = null, tint = HermesOrange, modifier = Modifier.size(32.dp))
                     }
                 }
             }
@@ -323,8 +433,8 @@ fun RecipeDetailScreen(
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
-            title = { Text("Foto auswählen") },
-            text = { Text("Woher möchten Sie das Bild hinzufügen?") },
+            title = { Text("Foto hinzufügen") },
+            text = { Text("Woher möchten Sie das Bild hinzufügen? (Aus der Galerie können mehrere Bilder gleichzeitig gewählt werden.)") },
             confirmButton = {
                 TextButton(onClick = {
                     showImageSourceDialog = false
@@ -336,7 +446,7 @@ fun RecipeDetailScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showImageSourceDialog = false
-                    cameraLauncher.launch(null)
+                    launchCamera()
                 }) { Text("Kamera") }
             }
         )
