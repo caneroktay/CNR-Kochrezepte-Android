@@ -51,7 +51,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
-import com.example.kochrezepte.ui.theme.HermesOrange
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import com.example.kochrezepte.R
@@ -61,8 +60,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
-
-
+import com.example.kochrezepte.ui.theme.HermesOrangeDark
 
 
 @Composable
@@ -217,7 +215,7 @@ fun SettingsScreen(
                     val uriHandler = LocalUriHandler.current
                     Text(
                         text = "Mehr Informationen..",
-                        color = HermesOrange,
+                        color = HermesOrangeDark,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.clickable {
                             uriHandler.openUri("https://github.com/caneroktay/CNR-Kochrezepte-Android")
@@ -249,7 +247,7 @@ fun SettingsScreen(
 
                     Text(
                         text = "caneroktay.com",
-                        color = HermesOrange,
+                        color = HermesOrangeDark,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.clickable {
                             uriHandler.openUri("https://caneroktay.com")

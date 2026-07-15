@@ -13,13 +13,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val dataStore = SettingsDataStore(application)
 
     val userName = dataStore.userName.stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val language = dataStore.language.stateIn(viewModelScope, SharingStarted.Eagerly, "de")
 
     fun setUserName(value: String) {
         viewModelScope.launch { dataStore.setUserName(value) }
     }
 
-    fun setLanguage(value: String) {
-        viewModelScope.launch { dataStore.setLanguage(value) }
-    }
+
 }
