@@ -64,4 +64,35 @@ class BackupManager(private val context: Context) {
             false
         }
     }
+
+    suspend fun importFromAssets(assetFileName: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            if (!imagesDir.exists()) imagesDir.mkdirs()
+            context.assets.open(assetFileName).use { input ->
+                ZipInputStream(input).use { zip ->
+                    var entry = zip.nextEntry
+                    while (entry != null) {
+                        val name = entry.name
+                        val outFile = when {
+                            name == "recipes_database.json" -> dbFile
+                            name.startsWith("images/") -> File(imagesDir, name.removePrefix("images/"))
+                            else -> null
+                        }
+                        if (outFile != null && !entry.isDirectory) {
+                            outFile.outputStream().use { output -> zip.copyTo(output) }
+                        }
+                        zip.closeEntry()
+                        entry = zip.nextEntry
+                    }
+                }
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+
+
 }

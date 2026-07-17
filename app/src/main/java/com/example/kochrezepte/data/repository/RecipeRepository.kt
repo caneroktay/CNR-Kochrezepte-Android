@@ -23,6 +23,9 @@ class RecipeRepository(context: Context) {
     val state: StateFlow<RecipeDatabase> = _state.asStateFlow()
 
     suspend fun initialize() {
+        if (!jsonStorage.exists()) {
+            backupManager.importFromAssets("default_data.zip")
+        }
         _state.value = jsonStorage.load()
     }
 

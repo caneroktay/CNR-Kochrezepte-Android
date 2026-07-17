@@ -94,7 +94,7 @@ fun HomeScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("Kategorien", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+            Text("Kategorien:", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))
 
             LazyVerticalGrid(
@@ -139,7 +139,7 @@ fun HomeScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Text("Lieblingsrezepte…", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+            Text("Lieblingsrezepte:", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))
 
             LazyColumn(

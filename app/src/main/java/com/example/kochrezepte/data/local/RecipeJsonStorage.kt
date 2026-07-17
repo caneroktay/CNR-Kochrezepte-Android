@@ -36,4 +36,5 @@ class RecipeJsonStorage(private val context: Context) {
             e.printStackTrace()
         }
     }
+    fun exists(): Boolean = dbFile.exists()
 }

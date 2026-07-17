@@ -105,23 +105,7 @@ fun RecipeListScreen(
                     modifier = Modifier.weight(1f)
                 )
 
-                Box {
-                    OutlinedButton(onClick = { showCategoryMenu = true }, shape = RoundedCornerShape(50)) {
-                        Icon(imageVector = Icons.Default.ArrowDropDown , contentDescription = null, tint = HermesOrange, modifier = Modifier.size(40.dp))
-                        Spacer(Modifier.width(5.dp))
-                        Text("Kategorien")
-                    }
-                    DropdownMenu(expanded = showCategoryMenu, onDismissRequest = { showCategoryMenu = false }) {
-                        DropdownMenuItem(text = { Text("Alle") }, onClick = {
-                            selectedCategoryId = null; showCategoryMenu = false
-                        })
-                        db.categories.forEach { category ->
-                            DropdownMenuItem(text = { Text(category.name) }, onClick = {
-                                selectedCategoryId = category.id; showCategoryMenu = false
-                            })
-                        }
-                    }
-                }
+
             }
 
             Spacer(Modifier.height(20.dp))
