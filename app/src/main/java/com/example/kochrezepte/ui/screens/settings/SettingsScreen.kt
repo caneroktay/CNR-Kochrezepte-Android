@@ -61,7 +61,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.clickable
 import com.example.kochrezepte.ui.theme.HermesOrangeDark
-
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun SettingsScreen(
@@ -102,13 +103,19 @@ fun SettingsScreen(
             })
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp)) {
-            Spacer(Modifier.height(12.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(Modifier.height(5.dp))
             Text(
-                "Einstellungen", color = TextPrimary, style = MaterialTheme.typography.headlineLarge,
+                "Einstellungen", color = TextPrimary, style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(10.dp))
 
             Column(
                 modifier = Modifier.fillMaxWidth().background(SurfaceDark, RoundedCornerShape(28.dp)).padding(16.dp),
@@ -179,7 +186,7 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(5.dp))
 
                     Text(
                         text = "Um Ihre Rezepte zu sichern, tippen Sie einfach auf „Daten Exportieren“ und speichern Sie die ZIP‑Datei auf Ihrem Smartphone.\n\n" +
@@ -187,7 +194,7 @@ fun SettingsScreen(
                                 "Öffnen Sie dort die KochRezepte‑App, wählen Sie „Daten Importieren“ und anschließend die ZIP‑Datei aus.\n\n" +
                                 "Damit werden alle Rezepte vollständig übernommen.",
                         color = TextPrimary,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center
                     )
                 }
