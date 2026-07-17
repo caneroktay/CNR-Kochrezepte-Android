@@ -47,6 +47,7 @@ import coil3.compose.AsyncImage
 import com.example.kochrezepte.navigation.AppDestinations
 import com.example.kochrezepte.ui.theme.*
 import com.example.kochrezepte.viewmodel.RecipeViewModel
+import androidx.compose.runtime.mutableFloatStateOf
 
 @Composable
 fun RecipeViewScreen(
@@ -291,7 +292,7 @@ fun RecipeViewScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             val pagerState = rememberPagerState(initialPage = startIndex) { imageFiles.size }
-            var pageScale by remember { mutableStateOf(1f) }
+            var pageScale by remember { mutableFloatStateOf(1f) }
             LaunchedEffect(pagerState.currentPage) { pageScale = 1f }
 
             Box(
@@ -334,7 +335,7 @@ fun RecipeViewScreen(
 
 @Composable
 private fun ZoomableImage(file: java.io.File, onScaleChange: (Float) -> Unit) {
-    var scale by remember { mutableStateOf(1f) }
+    var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
 
     LaunchedEffect(scale) { onScaleChange(scale) }
